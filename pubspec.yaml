@@ -47,6 +47,9 @@ dependencies:
   
   # HTTP requests
   http: ^1.1.2
+  
+  # Supabase
+  supabase_flutter: ^2.5.6
 
 dev_dependencies:
   flutter_test:
