@@ -1,0 +1,477 @@
+---
+alwaysApply: true
+---
+# Regras e Especificações - Aplicativo de Futebol Online (Brasfoot Online)
+
+## Visão Geral
+Aplicativo mobile desenvolvido em Flutter para disputas online de futebol, inspirado no Brasfoot, com funcionalidades multiplayer, ranking, torneios e partidas em tempo real.
+
+---
+
+## 1. Funcionalidades Principais
+
+### 1.1 Sistema de Autenticação
+- **Cadastro de usuário**: Email, senha, nome de usuário
+- **Login**: Email/senha ou autenticação social (Google, Facebook)
+- **Recuperação de senha**: Via email
+- **Perfil do usuário**: Avatar, estatísticas, histórico de partidas
+
+### 1.2 Modos de Jogo
+
+#### 1.2.1 Partida Rápida (Quick Match)
+- Busca automática de oponente online
+- Partida 1x1
+- Duração: 5-10 minutos
+- Sem ranking (apenas diversão)
+
+#### 1.2.2 Partida Rankeada
+- Sistema de matchmaking baseado em elo/ranking
+- Partida 1x1
+- Ganha/perde pontos de ranking
+- Histórico de partidas registrado
+
+#### 1.2.3 Torneios
+- Torneios semanais/mensais
+- Sistema de chaveamento (eliminatório)
+- Premiação para campeões
+- Inscrição com limite de participantes
+
+#### 1.2.4 Liga de Amigos
+- Criar ligas privadas
+- Convidar amigos
+- Tabela de classificação
+- Partidas entre membros da liga
+
+### 1.3 Sistema de Times
+
+#### 1.3.1 Escolha de Time
+- Seleção de time nacional ou clube
+- Estatísticas do time (ataque, defesa, meio-campo)
+- Formação tática (4-4-2, 4-3-3, 3-5-2, etc.)
+- Escalação de jogadores
+
+#### 1.3.2 Gerenciamento de Time
+- Melhorar jogadores com experiência
+- Contratar/vender jogadores
+- Treinar habilidades específicas
+- Sistema de economia (moedas/creditos)
+
+### 1.4 Mecânica de Jogo
+
+#### 1.4.1 Partida
+- **Duração**: 90 minutos (acelerado para 5-10 min reais)
+- **Controles**: Toque na tela para ações
+- **Ações disponíveis**:
+  - Passes
+  - Chutes ao gol
+  - Dribles
+  - Defesas
+  - Faltas e cartões
+- **Sistema de tempo real**: Sincronização entre jogadores
+- **Replay**: Visualizar lances importantes
+
+#### 1.4.2 Estatísticas da Partida
+- Posse de bola
+- Chutes ao gol
+- Escanteios
+- Faltas
+- Cartões
+- Gols marcados/sofridos
+
+### 1.5 Sistema de Ranking
+
+#### 1.5.1 Elo/Rating
+- Sistema similar ao ELO (chess rating)
+- Ganha pontos ao vencer
+- Perde pontos ao perder
+- Pontos baseados na diferença de elo do oponente
+
+#### 1.5.2 Divisões/Ligas
+- Bronze
+- Prata
+- Ouro
+- Platina
+- Diamante
+- Mestre
+- Lendário
+
+#### 1.5.3 Recompensas por Divisão
+- Moedas semanais baseadas na divisão
+- Badges exclusivos
+- Skins de uniforme
+- Títulos e conquistas
+
+### 1.6 Sistema Social
+
+#### 1.6.1 Amigos
+- Adicionar/remover amigos
+- Lista de amigos online
+- Desafiar amigos para partidas
+
+#### 1.6.2 Chat
+- Chat durante partidas (emojis pré-definidos)
+- Chat global (lobby)
+- Chat privado entre amigos
+- Sistema de reportar usuários
+
+#### 1.6.3 Compartilhamento
+- Compartilhar conquistas
+- Compartilhar resultados de partidas
+- Compartilhar ranking
+
+### 1.7 Sistema de Conquistas e Títulos
+
+#### 1.7.1 Conquistas
+- Primeira vitória
+- 10/50/100/500 vitórias
+- Goleadas
+- Hat-tricks
+- Invicto (X partidas)
+- Campeão de torneio
+- Subir de divisão
+
+#### 1.7.2 Títulos
+- "Goleador Implacável"
+- "Muro Defensivo"
+- "Rei do Meio-Campo"
+- "Lenda do Futebol"
+
+---
+
+## 2. Arquitetura Técnica
+
+### 2.1 Análise: Flutter vs React Native
+
+#### 2.1.1 Comparação Técnica
+
+| Critério | Flutter ⭐ | React Native | Vencedor |
+|----------|-----------|--------------|----------|
+| **Performance (60 FPS)** | ✅ Compilado nativo, 60 FPS garantido | ⚠️ Depende do JS bridge, pode ter lag | **Flutter** |
+| **Animações Complexas** | ✅ Skia engine, animações suaves | ⚠️ Reanimated ajuda, mas não igual | **Flutter** |
+| **UI Customizada** | ✅ Canvas nativo, total controle | ⚠️ Views nativas limitadas | **Flutter** |
+| **Tempo de Desenvolvimento** | ✅ Hot reload rápido | ✅ Fast refresh bom | **Empate** |
+| **Ecossistema** | ✅ Crescendo rápido | ✅ Mais maduro | **React Native** |
+| **WebSockets/Real-time** | ✅ Suporte nativo excelente | ✅ Suporte nativo excelente | **Empate** |
+| **Curva de Aprendizado** | ⚠️ Dart (nova linguagem) | ✅ JavaScript (familiar) | **React Native** |
+| **Tamanho do App** | ⚠️ ~20-30MB (inclui engine) | ✅ ~10-15MB | **React Native** |
+| **Web (futuro)** | ✅ Flutter Web funcional | ⚠️ React Native Web limitado | **Flutter** |
+| **Desktop (futuro)** | ✅ Suporte nativo | ❌ Não suportado | **Flutter** |
+
+#### 2.1.2 Análise para Este Projeto Específico
+
+**Requisitos Críticos:**
+1. ✅ **60 FPS durante partidas** → Flutter vence (compilado nativo)
+2. ✅ **Animações complexas do campo** → Flutter vence (Skia engine)
+3. ✅ **UI customizada (campo isométrico)** → Flutter vence (Canvas nativo)
+4. ✅ **Tempo real (WebSockets)** → Empate (ambos excelentes)
+5. ✅ **Multiplataforma** → Flutter vence (melhor suporte web/desktop)
+
+**Recomendação: FLUTTER ⭐**
+
+**Motivos:**
+- **Performance superior** para jogos (60 FPS garantido)
+- **Animações nativas** sem overhead do JS bridge
+- **UI customizada** perfeita para campo de futebol
+- **Suporte web/desktop** para expansão futura
+- **Hot reload** excelente para desenvolvimento rápido
+
+**Quando escolher React Native:**
+- Se a equipe já domina JavaScript/React
+- Se precisar de muitas bibliotecas nativas específicas
+- Se o foco for apenas mobile (sem web/desktop)
+
+#### 2.1.3 Exemplos Práticos para Este Projeto
+
+**Renderização do Campo de Futebol:**
+- **Flutter**: `CustomPaint` com `Canvas` nativo → 60 FPS garantido, animações suaves
+- **React Native**: `react-native-svg` ou `react-native-canvas` → Pode ter lag, menos controle
+
+**Animações de Gols:**
+- **Flutter**: `AnimationController` + `Tween` → Performance nativa, sem overhead
+- **React Native**: `react-native-reanimated` → Bom, mas ainda passa pelo bridge JS
+
+**Sincronização em Tempo Real:**
+- **Flutter**: `web_socket_channel` → Comunicação direta, baixa latência
+- **React Native**: `socket.io-client` → Funciona bem, mas com overhead do bridge
+
+**Conclusão Final:**
+Para um jogo de futebol online com requisitos de performance (60 FPS), animações complexas e UI customizada, **Flutter é a escolha superior**.
+
+### 2.2 Frontend (Flutter) - RECOMENDADO
+- **Framework**: Flutter 3.x+
+- **Linguagem**: Dart
+- **State Management**: Riverpod (recomendado) ou Provider
+- **Navegação**: GoRouter
+- **UI/UX**: Material Design 3 + Custom Paint para campo
+- **Animações**: 
+  - Rive para animações complexas
+  - Flutter Animated para animações simples
+  - Custom Paint para renderização do campo
+- **WebSockets**: `web_socket_channel` ou `socket_io_client`
+- **Gerenciamento de Estado**: Riverpod para estado global
+
+### 2.3 Backend
+- **Servidor**: Node.js com Express ou Firebase
+- **Banco de Dados**: 
+  - Firebase Firestore (NoSQL) ou
+  - PostgreSQL (SQL)
+- **Real-time**: 
+  - Firebase Realtime Database ou
+  - WebSockets (Socket.io)
+
+### 2.4 Autenticação
+- Firebase Authentication
+- Ou backend próprio com JWT
+
+### 2.5 Sincronização de Partidas
+- **WebSockets** para comunicação em tempo real
+- **Servidor de jogo dedicado** para partidas
+- **Sistema de reconciliação** para evitar trapaças
+- **Autoridade do servidor** para validação de ações
+
+### 2.6 APIs Necessárias
+- API de matchmaking
+- API de partidas em tempo real
+- API de ranking/elo
+- API de torneios
+- API de chat
+- API de notificações push
+
+---
+
+## 3. Regras de Negócio
+
+### 3.1 Partidas
+
+#### 3.1.1 Início de Partida
+- Ambos os jogadores devem confirmar prontidão
+- Time limite de 30 segundos para confirmação
+- Cancelamento se um jogador não confirmar
+
+#### 3.1.2 Durante a Partida
+- Conexão perdida: 30 segundos de tolerância
+- Se não reconectar: derrota automática
+- Pausa: Máximo 1 pausa de 2 minutos por partida
+- Desistência: Derrota automática e penalidade no ranking
+
+#### 3.1.3 Fim de Partida
+- Resultado final registrado
+- Pontos de ranking atualizados
+- Estatísticas atualizadas
+- Recompensas distribuídas
+
+### 3.2 Sistema Anti-Trapaça
+
+#### 3.2.1 Validações
+- Todas as ações validadas no servidor
+- Verificação de tempo de resposta
+- Detecção de modificação de dados
+- Rate limiting de ações por segundo
+
+#### 3.2.2 Penalidades
+- Primeira infração: Aviso
+- Segunda infração: Ban temporário (3 dias)
+- Terceira infração: Ban permanente
+
+### 3.3 Sistema de Ranking
+
+#### 3.3.1 Cálculo de Pontos
+```
+Novo Elo = Elo Atual + K × (Resultado - Esperado)
+
+Onde:
+- K = 32 (fator de ajuste)
+- Resultado = 1 (vitória), 0.5 (empate), 0 (derrota)
+- Esperado = 1 / (1 + 10^((Elo_Oponente - Elo_Atual) / 400))
+```
+
+#### 3.3.2 Promoção/Rebaixamento
+- Subir de divisão: Atingir limite superior da divisão atual
+- Rebaixar: Cair abaixo do limite inferior
+- Proteção: Não rebaixar nas primeiras 3 partidas após promoção
+
+### 3.4 Economia do Jogo
+
+#### 3.4.1 Moedas
+- Ganhar moedas: Vitórias, objetivos diários, torneios
+- Gastar moedas: Melhorar jogadores, comprar itens, entrar em torneios
+
+#### 3.4.2 Itens
+- Melhorias de jogadores (permanentes)
+- Skins de uniforme
+- Emojis de chat
+- Boosters temporários (não em partidas rankeadas)
+
+---
+
+## 4. Interface do Usuário
+
+### 4.1 Telas Principais
+
+#### 4.1.1 Tela Inicial
+- Botão "Jogar Agora"
+- Botão "Ranking"
+- Botão "Torneios"
+- Botão "Perfil"
+- Notificações pendentes
+
+#### 4.1.2 Tela de Matchmaking
+- Buscando oponente (animação)
+- Cancelar busca
+- Tempo de espera
+- Opções: Partida Rápida ou Rankeada
+
+#### 4.1.3 Tela de Partida
+- Campo de futebol (visão isométrica ou top-down)
+- Placar (tempo, gols)
+- Controles de ação
+- Estatísticas da partida
+- Chat rápido (emojis)
+
+#### 4.1.4 Tela de Resultado
+- Placar final
+- Estatísticas da partida
+- Pontos ganhos/perdidos
+- Próximas ações (jogar novamente, ver replay)
+
+#### 4.1.5 Tela de Ranking
+- Tabela de classificação global
+- Sua posição
+- Filtros (divisão, região)
+- Histórico de partidas
+
+#### 4.1.6 Tela de Perfil
+- Avatar e informações
+- Estatísticas gerais
+- Histórico de partidas
+- Conquistas
+- Configurações
+
+### 4.2 Design
+
+#### 4.2.1 Cores
+- Verde (campo)
+- Branco (linhas do campo)
+- Azul/Verde para UI (tema do app)
+
+#### 4.2.2 Animações
+- Transições suaves entre telas
+- Animações de gols
+- Feedback visual em ações
+- Loading states
+
+---
+
+## 5. Requisitos Não-Funcionais
+
+### 5.1 Performance
+- Tempo de resposta < 100ms para ações
+- 60 FPS durante partidas
+- Carregamento inicial < 3 segundos
+
+### 5.2 Escalabilidade
+- Suportar 10.000+ usuários simultâneos
+- Sistema de load balancing
+- Cache de dados frequentes
+
+### 5.3 Segurança
+- Criptografia de dados sensíveis
+- Validação de todas as ações no servidor
+- Proteção contra DDoS
+- Backup regular de dados
+
+### 5.4 Disponibilidade
+- Uptime de 99.9%
+- Sistema de fallback
+- Monitoramento 24/7
+
+---
+
+## 6. Roadmap de Desenvolvimento
+
+### Fase 1 - MVP (Mínimo Produto Viável)
+- [ ] Autenticação básica
+- [ ] Partida rápida 1x1
+- [ ] Sistema básico de ranking
+- [ ] Interface de partida funcional
+
+### Fase 2 - Funcionalidades Core
+- [ ] Sistema de matchmaking melhorado
+- [ ] Partidas rankeadas
+- [ ] Sistema de amigos
+- [ ] Chat básico
+
+### Fase 3 - Recursos Avançados
+- [ ] Torneios
+- [ ] Liga de amigos
+- [ ] Sistema de conquistas
+- [ ] Melhorias de time
+
+### Fase 4 - Polimento
+- [ ] Animações avançadas
+- [ ] Sistema de notificações push
+- [ ] Compartilhamento social
+- [ ] Otimizações de performance
+
+---
+
+## 7. Considerações Adicionais
+
+### 7.1 Monetização (Opcional)
+- Anúncios (após partidas, não durante)
+- Compras in-app (skins, moedas)
+- Battle Pass sazonal
+- **Importante**: Não pay-to-win, apenas cosméticos
+
+### 7.2 Localização
+- Português (BR)
+- Inglês
+- Espanhol
+- Expansão futura para outros idiomas
+
+### 7.3 Plataformas
+- Android (prioridade)
+- iOS
+- Web (futuro)
+- Desktop (futuro)
+
+---
+
+## 8. Métricas de Sucesso
+
+### 8.1 KPIs
+- Usuários ativos diários (DAU)
+- Usuários ativos mensais (MAU)
+- Taxa de retenção (D1, D7, D30)
+- Tempo médio de sessão
+- Taxa de conclusão de partidas
+- NPS (Net Promoter Score)
+
+### 8.2 Metas Iniciais
+- 1.000 usuários registrados no primeiro mês
+- 100 partidas/dia no primeiro mês
+- Retenção D7 > 30%
+- Retenção D30 > 15%
+
+---
+
+## 9. Notas de Desenvolvimento
+
+### 9.1 Prioridades
+1. **Crítico**: Sistema de partidas funcionando
+2. **Alto**: Matchmaking e ranking
+3. **Médio**: Social e torneios
+4. **Baixo**: Cosméticos e extras
+
+### 9.2 Decisões Técnicas Pendentes
+- [x] **Escolher framework frontend** → **Flutter** (decisão tomada)
+- [ ] Escolher backend (Firebase vs próprio)
+- [ ] Definir engine de física para partidas (Flutter Physics ou custom)
+- [x] **Escolher sistema de state management** → **Riverpod** (recomendado)
+- [ ] Definir estratégia de sincronização (WebSockets vs Firebase Realtime)
+
+---
+
+**Última atualização**: Data de criação do documento
+**Versão**: 1.0
+**Status**: Em planejamento
