@@ -157,11 +157,23 @@ Database/Backend
 ```
 
 #### 3.1.3 Perfil Inicial
+**Ao fazer cadastro, o usuário recebe:**
 - Nome de usuário único
 - Avatar padrão (customizável depois)
 - ELO inicial: 1000
 - Divisão inicial: Bronze
-- Moedas iniciais: 100
+- **Moedas iniciais: 500** (para comprar jogadores iniciais)
+- Time inicial: Time básico com 11 jogadores de nível 1
+
+**Fluxo de Cadastro:**
+```
+1. Usuário preenche email, senha e nome de usuário
+2. Conta criada no Supabase Auth
+3. Perfil criado na tabela profiles
+4. Time inicial criado com 11 jogadores básicos
+5. 500 moedas creditadas na conta
+6. Redirecionamento para tela de montagem de time
+```
 
 ### 3.2 Modos de Jogo
 
@@ -262,10 +274,65 @@ class Team {
 - 4-2-3-1 (Controle)
 
 #### 3.3.2 Gerenciamento de Time
-- **Melhorar Jogadores**: Usar moedas para aumentar stats
-- **Contratar/Vender**: Mercado de transferências (futuro)
-- **Treinar**: Boost temporário de habilidades
-- **Economia**: Sistema de moedas e créditos
+
+**Sistema de Jogadores:**
+Cada jogador possui:
+- **Nome**: Nome do jogador
+- **Posição**: Goleiro, Zagueiro, Lateral, Volante, Meia, Atacante
+- **Nível**: 1 a 10 (determina o potencial máximo)
+- **Estatísticas**: Ataque, Defesa, Meio-campo, Velocidade (0-100)
+- **Experiência (XP)**: Ganha XP ao jogar partidas
+- **Valor**: Custo em moedas para comprar/vender
+
+**Compra de Jogadores:**
+- **Mercado de Jogadores**: Lista de jogadores disponíveis para compra
+- **Preços baseados em nível**:
+  - Nível 1-2: 50-150 moedas
+  - Nível 3-4: 200-400 moedas
+  - Nível 5-6: 500-800 moedas
+  - Nível 7-8: 1000-1500 moedas
+  - Nível 9-10: 2000-5000 moedas
+- **Rotatividade**: Mercado atualiza diariamente com novos jogadores
+- **Limite de elenco**: Máximo 25 jogadores no elenco
+- **Escalação**: 11 jogadores titulares + 7 reservas
+
+**Evolução de Jogadores:**
+- **Ganho de XP**: Jogadores ganham XP ao participar de partidas
+  - Vitória: +50 XP
+  - Empate: +25 XP
+  - Derrota: +10 XP
+  - Gols marcados: +20 XP por gol
+  - Assistências: +15 XP por assistência
+- **Melhorias com Moedas**: 
+  - **Treinamento Básico**: 100 moedas → +5 em uma estatística
+  - **Treinamento Avançado**: 250 moedas → +10 em uma estatística
+  - **Treinamento Elite**: 500 moedas → +15 em uma estatística
+  - **Treinamento Completo**: 1000 moedas → +5 em todas as estatísticas
+- **Limite de Melhorias**: 
+  - Estatísticas não podem ultrapassar: Nível × 10
+  - Exemplo: Jogador nível 5 → máximo 50 em cada stat
+- **Subida de Nível**: 
+  - Ao atingir XP máximo do nível atual, jogador sobe de nível
+  - Novo nível desbloqueia potencial para melhorias maiores
+  - Custo para subir de nível: 200 moedas × nível atual
+
+**Venda de Jogadores:**
+- Jogadores podem ser vendidos por 50% do valor de compra
+- Jogadores evoluídos mantêm parte do valor investido
+- Venda instantânea (sem mercado de leilões inicialmente)
+
+**Economia do Time:**
+- **Ganhar Moedas**:
+  - Vitórias em partidas: 50-100 moedas
+  - Partidas rankeadas: 100-150 moedas
+  - Torneios: 500-5000 moedas
+  - Objetivos diários: 50-200 moedas
+  - Recompensas semanais por divisão
+- **Gastar Moedas**:
+  - Comprar jogadores: 50-5000 moedas
+  - Melhorar jogadores: 100-1000 moedas
+  - Subir nível de jogador: 200-2000 moedas
+  - Skins de uniforme: 200-1000 moedas (cosméticos)
 
 ### 3.4 Mecânica de Jogo
 
@@ -586,15 +653,28 @@ match_provider.dart         → MatchProvider
 
 #### 5.3.1 Moedas
 **Ganhar:**
+- **Cadastro inicial**: 500 moedas (para montar time inicial)
 - Vitória: 50-100 moedas (baseado no tipo de partida)
 - Empate: 25-50 moedas
 - Objetivos diários: 50-200 moedas
 - Torneios: 500-5000 moedas (baseado na posição)
 - Recompensas semanais: Baseado na divisão
+- Venda de jogadores: 50% do valor de compra
 
 **Gastar:**
-- Melhorar jogador: 100-500 moedas
-- Skins de uniforme: 200-1000 moedas
+- **Comprar jogadores**: 50-5000 moedas (baseado no nível do jogador)
+  - Nível 1-2: 50-150 moedas
+  - Nível 3-4: 200-400 moedas
+  - Nível 5-6: 500-800 moedas
+  - Nível 7-8: 1000-1500 moedas
+  - Nível 9-10: 2000-5000 moedas
+- **Melhorar jogador**: 100-1000 moedas (treinamentos)
+  - Treinamento Básico: 100 moedas (+5 em uma stat)
+  - Treinamento Avançado: 250 moedas (+10 em uma stat)
+  - Treinamento Elite: 500 moedas (+15 em uma stat)
+  - Treinamento Completo: 1000 moedas (+5 em todas as stats)
+- **Subir nível de jogador**: 200-2000 moedas (200 × nível atual)
+- Skins de uniforme: 200-1000 moedas (cosméticos)
 - Emojis de chat: 50-200 moedas
 - Entrar em torneio: 100 moedas (reembolsável se chegar às finais)
 
@@ -838,8 +918,57 @@ profiles (
   wins INTEGER DEFAULT 0,
   losses INTEGER DEFAULT 0,
   draws INTEGER DEFAULT 0,
-  coins INTEGER DEFAULT 100,
+  coins INTEGER DEFAULT 500,  -- Moedas iniciais aumentadas para 500
   created_at TIMESTAMP
+)
+
+-- Teams (Times dos usuários)
+teams (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  formation TEXT DEFAULT '4-4-2',
+  attack INTEGER DEFAULT 50,  -- 0-100
+  defense INTEGER DEFAULT 50,  -- 0-100
+  midfield INTEGER DEFAULT 50,  -- 0-100
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(user_id)  -- Um time por usuário
+)
+
+-- Players (Jogadores)
+players (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  team_id UUID NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  position TEXT NOT NULL,  -- goalkeeper, defender, midfielder, forward
+  level INTEGER DEFAULT 1,  -- 1-10
+  attack INTEGER DEFAULT 20,  -- 0-100
+  defense INTEGER DEFAULT 20,  -- 0-100
+  midfield INTEGER DEFAULT 20,  -- 0-100
+  speed INTEGER DEFAULT 20,  -- 0-100
+  experience INTEGER DEFAULT 0,  -- XP atual
+  experience_to_next_level INTEGER DEFAULT 100,  -- XP necessário para próximo nível
+  value INTEGER DEFAULT 100,  -- Valor em moedas
+  is_starter BOOLEAN DEFAULT false,  -- Se está na escalação titular
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+)
+
+-- Player Market (Mercado de Jogadores)
+player_market (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  player_template_id TEXT,  -- ID do template do jogador
+  name TEXT NOT NULL,
+  position TEXT NOT NULL,
+  level INTEGER NOT NULL,
+  base_attack INTEGER,
+  base_defense INTEGER,
+  base_midfield INTEGER,
+  base_speed INTEGER,
+  price INTEGER NOT NULL,  -- Preço em moedas
+  available_until TIMESTAMP,  -- Data de expiração no mercado
+  created_at TIMESTAMP DEFAULT NOW()
 )
 
 -- Matches
@@ -896,6 +1025,12 @@ friendships (
 - `game-server`: Servidor autoritativo da partida
 - `elo-calculation`: Cálculo de ELO após partida
 - `tournament-bracket`: Geração de chaves
+- `create-initial-team`: Cria time inicial com 11 jogadores ao cadastrar
+- `buy-player`: Processa compra de jogador do mercado
+- `sell-player`: Processa venda de jogador
+- `train-player`: Aplica melhorias de treinamento
+- `level-up-player`: Processa subida de nível do jogador
+- `update-player-xp`: Atualiza XP dos jogadores após partida
 
 ### 10.3 WebSockets
 
