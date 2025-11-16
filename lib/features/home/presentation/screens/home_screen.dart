@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/theme/colors.dart';
+import '../../../../../shared/widgets/buttons/primary_button.dart';
+import '../../../../../shared/widgets/cards/game_card.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -12,17 +16,18 @@ class HomeScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.primaryContainer,
+              AppColors.primary,
+              AppColors.primaryDark,
             ],
           ),
         ),
         child: SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                const SizedBox(height: 20),
+                
                 // Logo/Icon
                 Container(
                   width: 120,
@@ -41,10 +46,10 @@ class HomeScreen extends StatelessWidget {
                   child: const Icon(
                     Icons.sports_soccer,
                     size: 70,
-                    color: Color(0xFF2E7D32),
+                    color: AppColors.primary,
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
                 
                 // App Title
                 Text(
@@ -62,50 +67,56 @@ class HomeScreen extends StatelessWidget {
                         color: Colors.white.withOpacity(0.9),
                       ),
                 ),
-                const SizedBox(height: 60),
+                const SizedBox(height: 40),
                 
-                // Main Menu Buttons
-                _buildMenuButton(
-                  context,
-                  'Play Now',
-                  Icons.play_arrow,
-                  Colors.green,
-                  () {
-                    // TODO: Navigate to matchmaking
+                // Main Menu Cards
+                GameCard(
+                  title: 'Play Now',
+                  subtitle: 'Partida rápida - Sem ranking',
+                  icon: Icons.play_arrow,
+                  iconColor: AppColors.success,
+                  onTap: () {
+                    context.push('/matchmaking?type=quick');
+                  },
+                ),
+                const SizedBox(height: 16),
+                GameCard(
+                  title: 'Ranked Match',
+                  subtitle: 'Partida rankeada - Ganhe ELO',
+                  icon: Icons.leaderboard,
+                  iconColor: AppColors.secondary,
+                  onTap: () {
+                    context.push('/matchmaking?type=ranked');
+                  },
+                ),
+                const SizedBox(height: 16),
+                GameCard(
+                  title: 'Ranking',
+                  subtitle: 'Veja os melhores jogadores',
+                  icon: Icons.trending_up,
+                  iconColor: AppColors.accent,
+                  onTap: () {
+                    context.push('/ranking');
+                  },
+                ),
+                const SizedBox(height: 16),
+                GameCard(
+                  title: 'Tournaments',
+                  subtitle: 'Participe de torneios',
+                  icon: Icons.emoji_events,
+                  iconColor: AppColors.accent,
+                  onTap: () {
                     _showComingSoon(context);
                   },
                 ),
                 const SizedBox(height: 16),
-                _buildMenuButton(
-                  context,
-                  'Ranking',
-                  Icons.leaderboard,
-                  Colors.blue,
-                  () {
-                    // TODO: Navigate to ranking
-                    _showComingSoon(context);
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildMenuButton(
-                  context,
-                  'Tournaments',
-                  Icons.emoji_events,
-                  Colors.amber,
-                  () {
-                    // TODO: Navigate to tournaments
-                    _showComingSoon(context);
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildMenuButton(
-                  context,
-                  'Profile',
-                  Icons.person,
-                  Colors.purple,
-                  () {
-                    // TODO: Navigate to profile
-                    _showComingSoon(context);
+                GameCard(
+                  title: 'Profile',
+                  subtitle: 'Seu perfil e estatísticas',
+                  icon: Icons.person,
+                  iconColor: Colors.purple,
+                  onTap: () {
+                    context.push('/profile');
                   },
                 ),
               ],
@@ -116,50 +127,15 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuButton(
-    BuildContext context,
-    String label,
-    IconData icon,
-    Color color,
-    VoidCallback onPressed,
-  ) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 20),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          elevation: 4,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 28),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   void _showComingSoon(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Coming Soon'),
-        content: const Text('This feature is under development. Stay tuned!'),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text('Em Breve'),
+        content: const Text('Esta funcionalidade está em desenvolvimento. Fique ligado!'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -170,4 +146,3 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
-
