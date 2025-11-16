@@ -1,6 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase_config.dart';
-import '../constants/api_constants.dart';
 
 /// Serviço de inicialização e acesso ao Supabase
 class SupabaseService {
@@ -34,11 +33,12 @@ class SupabaseService {
   /// Retorna o cliente de autenticação
   static GoTrueClient get auth => client.auth;
 
-  /// Retorna o cliente de banco de dados
-  static PostgrestClient get database => client.from;
-
   /// Retorna o cliente de realtime
   static RealtimeClient get realtime => client.realtime;
+
+  /// Acessa uma tabela do banco de dados
+  /// Exemplo: SupabaseService.from('profiles')
+  static SupabaseQueryBuilder from(String table) => client.from(table);
 
   /// Verifica se o usuário está autenticado
   static bool get isAuthenticated => auth.currentUser != null;

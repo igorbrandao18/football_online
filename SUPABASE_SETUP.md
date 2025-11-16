@@ -108,8 +108,8 @@ final client = SupabaseService.client;
 // Apenas autenticação
 final auth = SupabaseService.auth;
 
-// Apenas banco de dados
-final db = SupabaseService.database;
+// Acessar tabela do banco de dados
+final query = SupabaseService.from('profiles');
 
 // Apenas realtime
 final realtime = SupabaseService.realtime;
@@ -118,11 +118,12 @@ final realtime = SupabaseService.realtime;
 ### Exemplo: Buscar Perfis
 
 ```dart
-final response = await SupabaseService.client
+final response = await SupabaseService
     .from('profiles')
     .select()
     .order('elo', ascending: false)
-    .limit(10);
+    .limit(10)
+    .execute();
 ```
 
 ### Exemplo: Autenticação
