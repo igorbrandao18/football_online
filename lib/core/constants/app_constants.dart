@@ -10,7 +10,7 @@ class AppConstants {
   static const int matchDurationMinutes = 90;
   static const int matchDurationRealSeconds = 600; // 10 minutos
   static const int initialElo = 1000;
-  static const int initialCoins = 100;
+  static const int initialCoins = 500; // Moedas iniciais para comprar jogadores
   
   // Matchmaking
   static const int matchmakingTimeoutSeconds = 60;
