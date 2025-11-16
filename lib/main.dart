@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'screens/home_screen.dart';
+import 'core/theme/app_theme.dart';
+import 'features/home/presentation/screens/home_screen.dart';
 
 void main() {
   runApp(
@@ -18,23 +19,9 @@ class FootballOnlineApp extends StatelessWidget {
     return MaterialApp(
       title: 'Football Online',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2E7D32), // Green for football field
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-        cardTheme: CardTheme(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        appBarTheme: const AppBarTheme(
-          centerTitle: true,
-          elevation: 0,
-        ),
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.light,
       home: const HomeScreen(),
     );
   }

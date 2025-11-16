@@ -1,477 +1,991 @@
 ---
 alwaysApply: true
----
-# Regras e Especificações - Aplicativo de Futebol Online (Brasfoot Online)
-
-## Visão Geral
-Aplicativo mobile desenvolvido em Flutter para disputas online de futebol, inspirado no Brasfoot, com funcionalidades multiplayer, ranking, torneios e partidas em tempo real.
-
+version: 2.0
+lastUpdated: 2024
 ---
 
-## 1. Funcionalidades Principais
+# 🏆 Football Online - Especificação Técnica Completa
 
-### 1.1 Sistema de Autenticação
-- **Cadastro de usuário**: Email, senha, nome de usuário
-- **Login**: Email/senha ou autenticação social (Google, Facebook)
-- **Recuperação de senha**: Via email
-- **Perfil do usuário**: Avatar, estatísticas, histórico de partidas
+> **Aplicativo mobile de futebol online multiplayer em tempo real**  
+> Desenvolvido em Flutter | Backend: Supabase (PostgreSQL)  
+> Inspirado no Brasfoot com funcionalidades modernas de e-sports
 
-### 1.2 Modos de Jogo
+---
 
-#### 1.2.1 Partida Rápida (Quick Match)
-- Busca automática de oponente online
-- Partida 1x1
-- Duração: 5-10 minutos
-- Sem ranking (apenas diversão)
+## 📋 Índice
 
-#### 1.2.2 Partida Rankeada
-- Sistema de matchmaking baseado em elo/ranking
-- Partida 1x1
-- Ganha/perde pontos de ranking
-- Histórico de partidas registrado
+1. [Visão Geral do Projeto](#1-visão-geral-do-projeto)
+2. [Arquitetura e Decisões Técnicas](#2-arquitetura-e-decisões-técnicas)
+3. [Funcionalidades Detalhadas](#3-funcionalidades-detalhadas)
+4. [Estrutura do Projeto](#4-estrutura-do-projeto)
+5. [Regras de Negócio](#5-regras-de-negócio)
+6. [Design System](#6-design-system)
+7. [Requisitos Não-Funcionais](#7-requisitos-não-funcionais)
+8. [Roadmap e Fases](#8-roadmap-e-fases)
+9. [Padrões de Código](#9-padrões-de-código)
+10. [APIs e Integrações](#10-apis-e-integrações)
 
-#### 1.2.3 Torneios
+---
+
+## 1. Visão Geral do Projeto
+
+### 1.1 Objetivo
+Criar uma experiência imersiva de futebol online multiplayer com:
+- Partidas em tempo real com sincronização precisa
+- Sistema de ranking competitivo (ELO)
+- Torneios e eventos sazonais
+- Recursos sociais (amigos, ligas, chat)
+- Economia do jogo (moedas, melhorias, cosméticos)
+
+### 1.2 Público-Alvo
+- **Primário**: Jogadores casuais de futebol (18-35 anos)
+- **Secundário**: Competitivos que buscam ranking e torneios
+- **Terciário**: Comunidades e grupos de amigos
+
+### 1.3 Plataformas
+- ✅ **Android** (prioridade)
+- ✅ **iOS**
+- 🔄 **Web** (fase 2)
+- 🔄 **Desktop** (fase 3)
+
+---
+
+## 2. Arquitetura e Decisões Técnicas
+
+### 2.1 Stack Tecnológico
+
+#### Frontend
+```
+Flutter 3.3.4+
+├── State Management: Riverpod 2.4.9
+├── Navigation: GoRouter 13.0.0
+├── Real-time: WebSocket Channel 2.4.0
+├── HTTP: http 1.1.2
+└── Database: supabase_flutter (a adicionar)
+```
+
+#### Backend
+```
+Supabase (BaaS)
+├── Database: PostgreSQL
+├── Auth: Supabase Auth
+├── Real-time: Supabase Realtime
+├── Storage: Supabase Storage (avatars, assets)
+└── Edge Functions: Deno (lógica de jogo)
+```
+
+#### Infraestrutura
+- **Hosting**: Supabase Cloud
+- **CDN**: Supabase Edge Network
+- **Monitoring**: Supabase Dashboard + Sentry (opcional)
+
+### 2.2 Arquitetura do Código
+
+**Padrão: Clean Architecture + Feature-First**
+
+```
+lib/
+├── core/                    # Código compartilhado
+│   ├── constants/          # Constantes da aplicação
+│   ├── theme/              # Tema e estilos
+│   ├── utils/              # Utilitários gerais
+│   └── errors/             # Tratamento de erros
+│
+├── features/               # Módulos por feature
+│   ├── auth/              # Autenticação
+│   │   ├── data/          # Camada de dados
+│   │   ├── domain/        # Camada de domínio
+│   │   └── presentation/  # Camada de apresentação
+│   ├── match/             # Partidas
+│   ├── ranking/           # Ranking e ELO
+│   ├── tournament/        # Torneios
+│   ├── profile/           # Perfil do usuário
+│   └── social/            # Amigos, chat, ligas
+│
+└── shared/                # Componentes compartilhados
+    ├── widgets/           # Widgets reutilizáveis
+    ├── utils/             # Utilitários compartilhados
+    └── extensions/         # Extensions Dart
+```
+
+### 2.3 Fluxo de Dados
+
+```
+UI (Widgets)
+    ↓
+Providers (Riverpod)
+    ↓
+Use Cases (Business Logic)
+    ↓
+Repositories (Data Abstraction)
+    ↓
+Data Sources (Supabase/API)
+    ↓
+Database/Backend
+```
+
+### 2.4 Decisões Técnicas Confirmadas
+
+| Decisão | Escolha | Status |
+|---------|---------|--------|
+| Framework Frontend | Flutter | ✅ Confirmado |
+| State Management | Riverpod | ✅ Confirmado |
+| Navegação | GoRouter | ✅ Confirmado |
+| Backend | Supabase | ✅ Confirmado |
+| Banco de Dados | PostgreSQL | ✅ Confirmado |
+| Real-time | Supabase Realtime + WebSockets | ✅ Confirmado |
+| Autenticação | Supabase Auth | ✅ Confirmado |
+
+---
+
+## 3. Funcionalidades Detalhadas
+
+### 3.1 Sistema de Autenticação
+
+#### 3.1.1 Métodos de Login
+- **Email/Senha**: Cadastro tradicional
+- **OAuth Social**: Google, Facebook (fase 2)
+- **Anônimo**: Modo guest temporário (fase 2)
+
+#### 3.1.2 Fluxo de Autenticação
+```
+1. Tela de Login/Cadastro
+2. Validação de dados
+3. Autenticação via Supabase Auth
+4. Criação de perfil inicial (se novo usuário)
+5. Redirecionamento para Home
+```
+
+#### 3.1.3 Perfil Inicial
+- Nome de usuário único
+- Avatar padrão (customizável depois)
+- ELO inicial: 1000
+- Divisão inicial: Bronze
+- Moedas iniciais: 100
+
+### 3.2 Modos de Jogo
+
+#### 3.2.1 Partida Rápida (Quick Match)
+**Características:**
+- Busca automática de oponente
+- Duração: 5-10 minutos reais (90 min de jogo)
+- Sem impacto no ranking
+- Recompensas: Moedas base (50-100)
+- Objetivo: Diversão e prática
+
+**Fluxo:**
+```
+1. Usuário clica "Play Now"
+2. Sistema busca oponente disponível
+3. Matchmaking rápido (sem filtro de ELO)
+4. Início imediato da partida
+5. Resultado não afeta ranking
+```
+
+#### 3.2.2 Partida Rankeada
+**Características:**
+- Matchmaking baseado em ELO (±200 pontos)
+- Duração: 5-10 minutos reais
+- Impacto no ranking (ganha/perde ELO)
+- Recompensas: Moedas + pontos de ranking
+- Histórico registrado
+
+**Fluxo:**
+```
+1. Usuário seleciona "Ranked Match"
+2. Sistema busca oponente com ELO similar
+3. Tempo de espera: 30-60 segundos
+4. Partida iniciada
+5. Resultado atualiza ELO de ambos
+6. Recompensas distribuídas
+```
+
+#### 3.2.3 Torneios
+**Características:**
 - Torneios semanais/mensais
-- Sistema de chaveamento (eliminatório)
-- Premiação para campeões
-- Inscrição com limite de participantes
+- Sistema eliminatório (bracket)
+- Inscrição com limite (16, 32, 64 participantes)
+- Premiação: Moedas + Badges exclusivos
+- Horários agendados
 
-#### 1.2.4 Liga de Amigos
+**Estrutura:**
+```
+Fase de Inscrição (3 dias)
+    ↓
+Sorteio de Chaves
+    ↓
+Oitavas de Final
+    ↓
+Quartas de Final
+    ↓
+Semifinal
+    ↓
+Final
+    ↓
+Premiação
+```
+
+#### 3.2.4 Liga de Amigos
+**Características:**
 - Criar ligas privadas
-- Convidar amigos
-- Tabela de classificação
-- Partidas entre membros da liga
+- Convidar até 20 amigos
+- Tabela de classificação própria
+- Partidas entre membros
+- Temporadas mensais
 
-### 1.3 Sistema de Times
+### 3.3 Sistema de Times
 
-#### 1.3.1 Escolha de Time
-- Seleção de time nacional ou clube
-- Estatísticas do time (ataque, defesa, meio-campo)
-- Formação tática (4-4-2, 4-3-3, 3-5-2, etc.)
-- Escalação de jogadores
+#### 3.3.1 Escolha de Time
+**Opções:**
+- Times nacionais (Brasil, Argentina, etc.)
+- Clubes (Flamengo, Corinthians, etc.)
+- Times customizados (futuro)
 
-#### 1.3.2 Gerenciamento de Time
-- Melhorar jogadores com experiência
-- Contratar/vender jogadores
-- Treinar habilidades específicas
-- Sistema de economia (moedas/creditos)
+**Estatísticas do Time:**
+```dart
+class Team {
+  final String id;
+  final String name;
+  final int attack;      // 0-100
+  final int defense;     // 0-100
+  final int midfield;    // 0-100
+  final Formation formation;
+  final List<Player> players;
+}
+```
 
-### 1.4 Mecânica de Jogo
+**Formações Disponíveis:**
+- 4-4-2 (Balanceada)
+- 4-3-3 (Ofensiva)
+- 3-5-2 (Meio-campo forte)
+- 5-3-2 (Defensiva)
+- 4-2-3-1 (Controle)
 
-#### 1.4.1 Partida
-- **Duração**: 90 minutos (acelerado para 5-10 min reais)
-- **Controles**: Toque na tela para ações
-- **Ações disponíveis**:
-  - Passes
-  - Chutes ao gol
-  - Dribles
-  - Defesas
-  - Faltas e cartões
-- **Sistema de tempo real**: Sincronização entre jogadores
-- **Replay**: Visualizar lances importantes
+#### 3.3.2 Gerenciamento de Time
+- **Melhorar Jogadores**: Usar moedas para aumentar stats
+- **Contratar/Vender**: Mercado de transferências (futuro)
+- **Treinar**: Boost temporário de habilidades
+- **Economia**: Sistema de moedas e créditos
 
-#### 1.4.2 Estatísticas da Partida
-- Posse de bola
-- Chutes ao gol
+### 3.4 Mecânica de Jogo
+
+#### 3.4.1 Partida em Tempo Real
+**Duração:**
+- 90 minutos de jogo (acelerado)
+- 5-10 minutos reais
+- 2 tempos de 45 minutos cada
+
+**Controles:**
+- **Toque simples**: Passar bola
+- **Toque longo**: Chute ao gol
+- **Swipe**: Drible
+- **Botões**: Ações especiais (faltas, escanteios)
+
+**Ações Disponíveis:**
+```
+Ataque:
+├── Passe curto
+├── Passe longo
+├── Chute ao gol
+├── Drible
+└── Cruzamento
+
+Defesa:
+├── Interceptação
+├── Cabeceio
+├── Defesa do goleiro
+└── Faltas táticas
+```
+
+#### 3.4.2 Sincronização
+**Estratégia:**
+- Servidor autoritativo (Supabase Edge Function)
+- Validação de todas as ações no servidor
+- Sincronização a cada 100ms
+- Sistema de reconciliação para conflitos
+- Previsão client-side para responsividade
+
+**Fluxo:**
+```
+Cliente → Ação do jogador
+    ↓
+Envio via WebSocket
+    ↓
+Validação no servidor
+    ↓
+Atualização do estado do jogo
+    ↓
+Broadcast para ambos jogadores
+    ↓
+Atualização da UI
+```
+
+#### 3.4.3 Estatísticas da Partida
+- Posse de bola (%)
+- Chutes ao gol (total e no alvo)
 - Escanteios
 - Faltas
-- Cartões
+- Cartões (amarelo/vermelho)
 - Gols marcados/sofridos
+- Passes completos/tentados
 
-### 1.5 Sistema de Ranking
+### 3.5 Sistema de Ranking
 
-#### 1.5.1 Elo/Rating
-- Sistema similar ao ELO (chess rating)
-- Ganha pontos ao vencer
-- Perde pontos ao perder
-- Pontos baseados na diferença de elo do oponente
-
-#### 1.5.2 Divisões/Ligas
-- Bronze
-- Prata
-- Ouro
-- Platina
-- Diamante
-- Mestre
-- Lendário
-
-#### 1.5.3 Recompensas por Divisão
-- Moedas semanais baseadas na divisão
-- Badges exclusivos
-- Skins de uniforme
-- Títulos e conquistas
-
-### 1.6 Sistema Social
-
-#### 1.6.1 Amigos
-- Adicionar/remover amigos
-- Lista de amigos online
-- Desafiar amigos para partidas
-
-#### 1.6.2 Chat
-- Chat durante partidas (emojis pré-definidos)
-- Chat global (lobby)
-- Chat privado entre amigos
-- Sistema de reportar usuários
-
-#### 1.6.3 Compartilhamento
-- Compartilhar conquistas
-- Compartilhar resultados de partidas
-- Compartilhar ranking
-
-### 1.7 Sistema de Conquistas e Títulos
-
-#### 1.7.1 Conquistas
-- Primeira vitória
-- 10/50/100/500 vitórias
-- Goleadas
-- Hat-tricks
-- Invicto (X partidas)
-- Campeão de torneio
-- Subir de divisão
-
-#### 1.7.2 Títulos
-- "Goleador Implacável"
-- "Muro Defensivo"
-- "Rei do Meio-Campo"
-- "Lenda do Futebol"
-
----
-
-## 2. Arquitetura Técnica
-
-### 2.1 Análise: Flutter vs React Native
-
-#### 2.1.1 Comparação Técnica
-
-| Critério | Flutter ⭐ | React Native | Vencedor |
-|----------|-----------|--------------|----------|
-| **Performance (60 FPS)** | ✅ Compilado nativo, 60 FPS garantido | ⚠️ Depende do JS bridge, pode ter lag | **Flutter** |
-| **Animações Complexas** | ✅ Skia engine, animações suaves | ⚠️ Reanimated ajuda, mas não igual | **Flutter** |
-| **UI Customizada** | ✅ Canvas nativo, total controle | ⚠️ Views nativas limitadas | **Flutter** |
-| **Tempo de Desenvolvimento** | ✅ Hot reload rápido | ✅ Fast refresh bom | **Empate** |
-| **Ecossistema** | ✅ Crescendo rápido | ✅ Mais maduro | **React Native** |
-| **WebSockets/Real-time** | ✅ Suporte nativo excelente | ✅ Suporte nativo excelente | **Empate** |
-| **Curva de Aprendizado** | ⚠️ Dart (nova linguagem) | ✅ JavaScript (familiar) | **React Native** |
-| **Tamanho do App** | ⚠️ ~20-30MB (inclui engine) | ✅ ~10-15MB | **React Native** |
-| **Web (futuro)** | ✅ Flutter Web funcional | ⚠️ React Native Web limitado | **Flutter** |
-| **Desktop (futuro)** | ✅ Suporte nativo | ❌ Não suportado | **Flutter** |
-
-#### 2.1.2 Análise para Este Projeto Específico
-
-**Requisitos Críticos:**
-1. ✅ **60 FPS durante partidas** → Flutter vence (compilado nativo)
-2. ✅ **Animações complexas do campo** → Flutter vence (Skia engine)
-3. ✅ **UI customizada (campo isométrico)** → Flutter vence (Canvas nativo)
-4. ✅ **Tempo real (WebSockets)** → Empate (ambos excelentes)
-5. ✅ **Multiplataforma** → Flutter vence (melhor suporte web/desktop)
-
-**Recomendação: FLUTTER ⭐**
-
-**Motivos:**
-- **Performance superior** para jogos (60 FPS garantido)
-- **Animações nativas** sem overhead do JS bridge
-- **UI customizada** perfeita para campo de futebol
-- **Suporte web/desktop** para expansão futura
-- **Hot reload** excelente para desenvolvimento rápido
-
-**Quando escolher React Native:**
-- Se a equipe já domina JavaScript/React
-- Se precisar de muitas bibliotecas nativas específicas
-- Se o foco for apenas mobile (sem web/desktop)
-
-#### 2.1.3 Exemplos Práticos para Este Projeto
-
-**Renderização do Campo de Futebol:**
-- **Flutter**: `CustomPaint` com `Canvas` nativo → 60 FPS garantido, animações suaves
-- **React Native**: `react-native-svg` ou `react-native-canvas` → Pode ter lag, menos controle
-
-**Animações de Gols:**
-- **Flutter**: `AnimationController` + `Tween` → Performance nativa, sem overhead
-- **React Native**: `react-native-reanimated` → Bom, mas ainda passa pelo bridge JS
-
-**Sincronização em Tempo Real:**
-- **Flutter**: `web_socket_channel` → Comunicação direta, baixa latência
-- **React Native**: `socket.io-client` → Funciona bem, mas com overhead do bridge
-
-**Conclusão Final:**
-Para um jogo de futebol online com requisitos de performance (60 FPS), animações complexas e UI customizada, **Flutter é a escolha superior**.
-
-### 2.2 Frontend (Flutter) - RECOMENDADO
-- **Framework**: Flutter 3.x+
-- **Linguagem**: Dart
-- **State Management**: Riverpod (recomendado) ou Provider
-- **Navegação**: GoRouter
-- **UI/UX**: Material Design 3 + Custom Paint para campo
-- **Animações**: 
-  - Rive para animações complexas
-  - Flutter Animated para animações simples
-  - Custom Paint para renderização do campo
-- **WebSockets**: `web_socket_channel` ou `socket_io_client`
-- **Gerenciamento de Estado**: Riverpod para estado global
-
-### 2.3 Backend
-- **Servidor**: Node.js com Express ou Firebase
-- **Banco de Dados**: 
-  - Firebase Firestore (NoSQL) ou
-  - PostgreSQL (SQL)
-- **Real-time**: 
-  - Firebase Realtime Database ou
-  - WebSockets (Socket.io)
-
-### 2.4 Autenticação
-- Firebase Authentication
-- Ou backend próprio com JWT
-
-### 2.5 Sincronização de Partidas
-- **WebSockets** para comunicação em tempo real
-- **Servidor de jogo dedicado** para partidas
-- **Sistema de reconciliação** para evitar trapaças
-- **Autoridade do servidor** para validação de ações
-
-### 2.6 APIs Necessárias
-- API de matchmaking
-- API de partidas em tempo real
-- API de ranking/elo
-- API de torneios
-- API de chat
-- API de notificações push
-
----
-
-## 3. Regras de Negócio
-
-### 3.1 Partidas
-
-#### 3.1.1 Início de Partida
-- Ambos os jogadores devem confirmar prontidão
-- Time limite de 30 segundos para confirmação
-- Cancelamento se um jogador não confirmar
-
-#### 3.1.2 Durante a Partida
-- Conexão perdida: 30 segundos de tolerância
-- Se não reconectar: derrota automática
-- Pausa: Máximo 1 pausa de 2 minutos por partida
-- Desistência: Derrota automática e penalidade no ranking
-
-#### 3.1.3 Fim de Partida
-- Resultado final registrado
-- Pontos de ranking atualizados
-- Estatísticas atualizadas
-- Recompensas distribuídas
-
-### 3.2 Sistema Anti-Trapaça
-
-#### 3.2.1 Validações
-- Todas as ações validadas no servidor
-- Verificação de tempo de resposta
-- Detecção de modificação de dados
-- Rate limiting de ações por segundo
-
-#### 3.2.2 Penalidades
-- Primeira infração: Aviso
-- Segunda infração: Ban temporário (3 dias)
-- Terceira infração: Ban permanente
-
-### 3.3 Sistema de Ranking
-
-#### 3.3.1 Cálculo de Pontos
+#### 3.5.1 Cálculo de ELO
+**Fórmula:**
 ```
-Novo Elo = Elo Atual + K × (Resultado - Esperado)
+Novo_ELO = ELO_Atual + K × (Resultado - Esperado)
 
 Onde:
 - K = 32 (fator de ajuste)
 - Resultado = 1 (vitória), 0.5 (empate), 0 (derrota)
-- Esperado = 1 / (1 + 10^((Elo_Oponente - Elo_Atual) / 400))
+- Esperado = 1 / (1 + 10^((ELO_Oponente - ELO_Atual) / 400))
 ```
 
-#### 3.3.2 Promoção/Rebaixamento
-- Subir de divisão: Atingir limite superior da divisão atual
-- Rebaixar: Cair abaixo do limite inferior
-- Proteção: Não rebaixar nas primeiras 3 partidas após promoção
+**Exemplo:**
+```
+Jogador A: ELO 1200
+Jogador B: ELO 1000
 
-### 3.4 Economia do Jogo
+Esperado_A = 1 / (1 + 10^((1000-1200)/400)) = 0.76
 
-#### 3.4.1 Moedas
-- Ganhar moedas: Vitórias, objetivos diários, torneios
-- Gastar moedas: Melhorar jogadores, comprar itens, entrar em torneios
+Se A vence:
+Novo_ELO_A = 1200 + 32 × (1 - 0.76) = 1207.68 ≈ 1208
 
-#### 3.4.2 Itens
-- Melhorias de jogadores (permanentes)
-- Skins de uniforme
-- Emojis de chat
-- Boosters temporários (não em partidas rankeadas)
+Se A perde:
+Novo_ELO_A = 1200 + 32 × (0 - 0.76) = 1175.68 ≈ 1176
+```
+
+#### 3.5.2 Divisões/Ligas
+| Divisão | ELO Mínimo | ELO Máximo | Recompensa Semanal |
+|---------|------------|------------|-------------------|
+| Bronze | 0 | 999 | 50 moedas |
+| Prata | 1000 | 1499 | 100 moedas |
+| Ouro | 1500 | 1999 | 200 moedas |
+| Platina | 2000 | 2499 | 350 moedas |
+| Diamante | 2500 | 2999 | 500 moedas |
+| Mestre | 3000 | 3499 | 750 moedas |
+| Lendário | 3500+ | ∞ | 1000 moedas |
+
+#### 3.5.3 Promoção/Rebaixamento
+- **Subir**: Atingir ELO mínimo da divisão superior
+- **Rebaixar**: Cair abaixo do ELO mínimo da divisão atual
+- **Proteção**: 3 partidas de graça após promoção (não rebaixa)
+
+### 3.6 Sistema Social
+
+#### 3.6.1 Amigos
+- Adicionar/remover amigos
+- Lista de amigos online
+- Desafiar para partida amigável
+- Ver estatísticas de amigos
+
+#### 3.6.2 Chat
+**Tipos:**
+- **In-game**: Emojis pré-definidos durante partida
+- **Lobby**: Chat global no menu principal
+- **Privado**: Conversas 1-1 com amigos
+
+**Emojis Disponíveis:**
+- 👍 Bom jogo
+- 👏 Parabéns
+- 😄 Risada
+- 😢 Tristeza
+- ⚽ Gol
+- 🎯 Quase
+- 🔥 Incrível
+
+#### 3.6.3 Compartilhamento
+- Compartilhar conquistas nas redes sociais
+- Compartilhar resultados de partidas
+- Compartilhar ranking e estatísticas
+
+### 3.7 Sistema de Conquistas
+
+#### 3.7.1 Conquistas Disponíveis
+```
+Vitórias:
+├── Primeira Vitória
+├── 10 Vitórias
+├── 50 Vitórias
+├── 100 Vitórias
+└── 500 Vitórias
+
+Gols:
+├── Primeiro Gol
+├── Hat-trick (3 gols em 1 partida)
+├── Poker (4 gols em 1 partida)
+└── 100 Gols Marcados
+
+Ranking:
+├── Subir para Prata
+├── Subir para Ouro
+├── Subir para Platina
+└── Alcançar Lendário
+
+Especiais:
+├── Invicto (5 partidas sem perder)
+├── Goleada (vencer por 5+ gols)
+├── Campeão de Torneio
+└── 100 Partidas Jogadas
+```
+
+#### 3.7.2 Títulos e Badges
+- "Goleador Implacável" - 100+ gols
+- "Muro Defensivo" - 50+ partidas sem sofrer gol
+- "Rei do Meio-Campo" - 1000+ passes completos
+- "Lenda do Futebol" - ELO 3500+
+- "Campeão" - Vencer torneio
+- "Invencível" - 10 vitórias seguidas
 
 ---
 
-## 4. Interface do Usuário
+## 4. Estrutura do Projeto
 
-### 4.1 Telas Principais
+### 4.1 Organização de Pastas
 
-#### 4.1.1 Tela Inicial
-- Botão "Jogar Agora"
-- Botão "Ranking"
-- Botão "Torneios"
-- Botão "Perfil"
-- Notificações pendentes
+```
+lib/
+├── main.dart                    # Entry point
+│
+├── core/                        # Código compartilhado
+│   ├── constants/
+│   │   ├── app_constants.dart  # Constantes gerais
+│   │   ├── api_constants.dart  # URLs, endpoints
+│   │   └── game_constants.dart # Regras do jogo
+│   │
+│   ├── theme/
+│   │   ├── app_theme.dart      # Tema principal
+│   │   ├── colors.dart         # Paleta de cores
+│   │   └── text_styles.dart    # Estilos de texto
+│   │
+│   ├── utils/
+│   │   ├── validators.dart     # Validações
+│   │   ├── formatters.dart     # Formatadores
+│   │   └── helpers.dart        # Funções auxiliares
+│   │
+│   └── errors/
+│       ├── exceptions.dart     # Exceções customizadas
+│       └── failures.dart       # Failures (Either pattern)
+│
+├── features/                    # Features (Clean Architecture)
+│   │
+│   ├── auth/                   # Autenticação
+│   │   ├── data/
+│   │   │   ├── models/         # UserModel, etc.
+│   │   │   ├── repositories/   # AuthRepositoryImpl
+│   │   │   └── datasources/   # SupabaseAuthDataSource
+│   │   ├── domain/
+│   │   │   ├── entities/      # User entity
+│   │   │   ├── repositories/  # AuthRepository interface
+│   │   │   └── usecases/      # LoginUseCase, SignUpUseCase
+│   │   └── presentation/
+│   │       ├── screens/        # LoginScreen, SignUpScreen
+│   │       ├── widgets/        # LoginForm, etc.
+│   │       └── providers/      # AuthProvider, etc.
+│   │
+│   ├── match/                   # Partidas
+│   │   ├── data/
+│   │   ├── domain/
+│   │   └── presentation/
+│   │
+│   ├── ranking/                # Ranking e ELO
+│   │   ├── data/
+│   │   ├── domain/
+│   │   └── presentation/
+│   │
+│   ├── tournament/              # Torneios
+│   │   ├── data/
+│   │   ├── domain/
+│   │   └── presentation/
+│   │
+│   ├── profile/                # Perfil do usuário
+│   │   ├── data/
+│   │   ├── domain/
+│   │   └── presentation/
+│   │
+│   └── social/                 # Amigos, chat, ligas
+│       ├── data/
+│       ├── domain/
+│       └── presentation/
+│
+└── shared/                     # Componentes compartilhados
+    ├── widgets/
+    │   ├── buttons/           # CustomButton, etc.
+    │   ├── cards/             # MatchCard, UserCard
+    │   └── loading/           # LoadingIndicator
+    ├── utils/
+    │   └── extensions.dart    # Extensions úteis
+    └── extensions/
+        ├── string_extensions.dart
+        ├── datetime_extensions.dart
+        └── context_extensions.dart
+```
 
-#### 4.1.2 Tela de Matchmaking
-- Buscando oponente (animação)
-- Cancelar busca
-- Tempo de espera
-- Opções: Partida Rápida ou Rankeada
+### 4.2 Convenções de Nomenclatura
 
-#### 4.1.3 Tela de Partida
-- Campo de futebol (visão isométrica ou top-down)
-- Placar (tempo, gols)
-- Controles de ação
-- Estatísticas da partida
-- Chat rápido (emojis)
+**Arquivos:**
+- `snake_case.dart` para arquivos
+- `PascalCase` para classes
+- `camelCase` para variáveis e funções
 
-#### 4.1.4 Tela de Resultado
-- Placar final
-- Estatísticas da partida
-- Pontos ganhos/perdidos
-- Próximas ações (jogar novamente, ver replay)
+**Exemplos:**
+```
+user_profile_screen.dart    → UserProfileScreen
+auth_repository.dart        → AuthRepository
+match_provider.dart         → MatchProvider
+```
 
-#### 4.1.5 Tela de Ranking
-- Tabela de classificação global
-- Sua posição
-- Filtros (divisão, região)
-- Histórico de partidas
-
-#### 4.1.6 Tela de Perfil
-- Avatar e informações
-- Estatísticas gerais
-- Histórico de partidas
-- Conquistas
-- Configurações
-
-### 4.2 Design
-
-#### 4.2.1 Cores
-- Verde (campo)
-- Branco (linhas do campo)
-- Azul/Verde para UI (tema do app)
-
-#### 4.2.2 Animações
-- Transições suaves entre telas
-- Animações de gols
-- Feedback visual em ações
-- Loading states
+**Pastas:**
+- `snake_case` para pastas
+- Agrupar por feature, não por tipo
 
 ---
 
-## 5. Requisitos Não-Funcionais
+## 5. Regras de Negócio
 
-### 5.1 Performance
-- Tempo de resposta < 100ms para ações
-- 60 FPS durante partidas
-- Carregamento inicial < 3 segundos
+### 5.1 Partidas
 
-### 5.2 Escalabilidade
+#### 5.1.1 Início de Partida
+1. Ambos jogadores devem confirmar prontidão
+2. Time limite: 30 segundos
+3. Cancelamento se um jogador não confirmar
+4. Penalidade: -10 ELO (apenas ranked) se cancelar após matchmaking
+
+#### 5.1.2 Durante a Partida
+- **Conexão perdida**: 30 segundos de tolerância
+- **Reconexão**: Partida pausa automaticamente
+- **Sem reconexão**: Derrota automática após 30s
+- **Pausa**: Máximo 1 pausa de 2 minutos por partida
+- **Desistência**: Derrota automática + penalidade no ranking
+
+#### 5.1.3 Fim de Partida
+1. Resultado final registrado
+2. ELO atualizado (se ranked)
+3. Estatísticas atualizadas
+4. Recompensas distribuídas
+5. Histórico salvo
+
+### 5.2 Sistema Anti-Trapaça
+
+#### 5.2.1 Validações
+- ✅ Todas as ações validadas no servidor
+- ✅ Verificação de tempo de resposta (< 100ms)
+- ✅ Detecção de modificação de dados
+- ✅ Rate limiting: Máximo 10 ações/segundo
+- ✅ Verificação de integridade do estado do jogo
+
+#### 5.2.2 Penalidades
+| Infração | Penalidade |
+|----------|-----------|
+| Primeira | Aviso + -50 ELO |
+| Segunda | Ban 3 dias + -100 ELO |
+| Terceira | Ban permanente |
+
+### 5.3 Economia do Jogo
+
+#### 5.3.1 Moedas
+**Ganhar:**
+- Vitória: 50-100 moedas (baseado no tipo de partida)
+- Empate: 25-50 moedas
+- Objetivos diários: 50-200 moedas
+- Torneios: 500-5000 moedas (baseado na posição)
+- Recompensas semanais: Baseado na divisão
+
+**Gastar:**
+- Melhorar jogador: 100-500 moedas
+- Skins de uniforme: 200-1000 moedas
+- Emojis de chat: 50-200 moedas
+- Entrar em torneio: 100 moedas (reembolsável se chegar às finais)
+
+#### 5.3.2 Itens
+- **Melhorias permanentes**: Aumentam stats do time
+- **Skins cosméticos**: Apenas visual
+- **Boosters temporários**: Não permitidos em ranked
+- **Emojis**: Personalização do chat
+
+---
+
+## 6. Design System
+
+### 6.1 Cores
+
+**Paleta Principal:**
+```dart
+Primary: #2E7D32 (Verde campo)
+Secondary: #1976D2 (Azul)
+Accent: #FFC107 (Amarelo/Ouro)
+Error: #D32F2F (Vermelho)
+Success: #388E3C (Verde claro)
+Background: #F5F5F5 (Cinza claro)
+Surface: #FFFFFF (Branco)
+```
+
+**Cores do Campo:**
+- Campo: #2E7D32 (Verde)
+- Linhas: #FFFFFF (Branco)
+- Área do gol: #1B5E20 (Verde escuro)
+- Centro: #FFFFFF (Círculo branco)
+
+### 6.2 Tipografia
+
+**Fontes:**
+- **Títulos**: Roboto Bold
+- **Corpo**: Roboto Regular
+- **Números**: Roboto Mono (placar, estatísticas)
+
+**Tamanhos:**
+```dart
+displayLarge: 57px
+displayMedium: 45px
+displaySmall: 36px
+headlineLarge: 32px
+headlineMedium: 28px
+headlineSmall: 24px
+titleLarge: 22px
+titleMedium: 16px
+titleSmall: 14px
+bodyLarge: 16px
+bodyMedium: 14px
+bodySmall: 12px
+labelLarge: 14px
+labelMedium: 12px
+labelSmall: 11px
+```
+
+### 6.3 Componentes UI
+
+**Botões:**
+- Primary: Verde, preenchido
+- Secondary: Azul, outlined
+- Text: Sem background, apenas texto
+
+**Cards:**
+- Elevation: 4dp
+- Border radius: 16px
+- Padding: 16px
+
+**Inputs:**
+- Border radius: 8px
+- Height: 56px
+- Padding: 16px
+
+---
+
+## 7. Requisitos Não-Funcionais
+
+### 7.1 Performance
+
+| Métrica | Target | Crítico |
+|---------|--------|---------|
+| Tempo de resposta (ações) | < 100ms | < 200ms |
+| FPS durante partida | 60 FPS | 30 FPS mínimo |
+| Carregamento inicial | < 3s | < 5s |
+| Tempo de matchmaking | < 30s | < 60s |
+
+### 7.2 Escalabilidade
 - Suportar 10.000+ usuários simultâneos
-- Sistema de load balancing
+- Load balancing automático (Supabase)
 - Cache de dados frequentes
+- CDN para assets estáticos
 
-### 5.3 Segurança
-- Criptografia de dados sensíveis
-- Validação de todas as ações no servidor
-- Proteção contra DDoS
-- Backup regular de dados
+### 7.3 Segurança
+- ✅ Criptografia HTTPS/TLS
+- ✅ Validação server-side de todas as ações
+- ✅ Row Level Security (RLS) no Supabase
+- ✅ Proteção contra SQL Injection
+- ✅ Rate limiting
+- ✅ Backup diário automático
 
-### 5.4 Disponibilidade
-- Uptime de 99.9%
+### 7.4 Disponibilidade
+- Uptime: 99.9%
 - Sistema de fallback
 - Monitoramento 24/7
+- Alertas automáticos
 
 ---
 
-## 6. Roadmap de Desenvolvimento
+## 8. Roadmap e Fases
 
-### Fase 1 - MVP (Mínimo Produto Viável)
+### Fase 1 - MVP (4-6 semanas)
+**Objetivo**: Partida funcional básica
+
+- [x] Setup do projeto
+- [x] Estrutura de pastas
+- [ ] Integração Supabase
 - [ ] Autenticação básica
+- [ ] Tela de matchmaking
 - [ ] Partida rápida 1x1
 - [ ] Sistema básico de ranking
 - [ ] Interface de partida funcional
+- [ ] Tela de resultado
 
-### Fase 2 - Funcionalidades Core
+**Entregável**: App funcional com partidas básicas
+
+### Fase 2 - Core Features (4-6 semanas)
+**Objetivo**: Funcionalidades essenciais
+
 - [ ] Sistema de matchmaking melhorado
 - [ ] Partidas rankeadas
 - [ ] Sistema de amigos
-- [ ] Chat básico
+- [ ] Chat básico (emojis)
+- [ ] Perfil do usuário completo
+- [ ] Histórico de partidas
+- [ ] Estatísticas detalhadas
 
-### Fase 3 - Recursos Avançados
+**Entregável**: App completo com ranking e social
+
+### Fase 3 - Recursos Avançados (6-8 semanas)
+**Objetivo**: Diferenciação competitiva
+
 - [ ] Torneios
 - [ ] Liga de amigos
 - [ ] Sistema de conquistas
 - [ ] Melhorias de time
-
-### Fase 4 - Polimento
-- [ ] Animações avançadas
-- [ ] Sistema de notificações push
+- [ ] Economia do jogo
+- [ ] Notificações push
 - [ ] Compartilhamento social
+
+**Entregável**: App completo com todos os recursos
+
+### Fase 4 - Polimento (4-6 semanas)
+**Objetivo**: Qualidade e otimização
+
+- [ ] Animações avançadas
 - [ ] Otimizações de performance
+- [ ] Testes automatizados
+- [ ] Localização (i18n)
+- [ ] Acessibilidade
+- [ ] Analytics e métricas
+
+**Entregável**: App production-ready
 
 ---
 
-## 7. Considerações Adicionais
+## 9. Padrões de Código
 
-### 7.1 Monetização (Opcional)
-- Anúncios (após partidas, não durante)
-- Compras in-app (skins, moedas)
-- Battle Pass sazonal
-- **Importante**: Não pay-to-win, apenas cosméticos
+### 9.1 Clean Architecture
 
-### 7.2 Localização
-- Português (BR)
-- Inglês
-- Espanhol
-- Expansão futura para outros idiomas
+**Camadas:**
+1. **Presentation**: UI, Widgets, Providers
+2. **Domain**: Entities, Use Cases, Repository Interfaces
+3. **Data**: Models, Repository Implementations, Data Sources
 
-### 7.3 Plataformas
-- Android (prioridade)
-- iOS
-- Web (futuro)
-- Desktop (futuro)
+**Regra**: Dependências sempre apontam para dentro (Domain não depende de Data)
+
+### 9.2 State Management (Riverpod)
+
+**Providers:**
+```dart
+// State Provider (simples)
+final counterProvider = StateProvider<int>((ref) => 0);
+
+// Future Provider (async)
+final userProvider = FutureProvider<User>((ref) async {
+  return await ref.read(authRepositoryProvider).getCurrentUser();
+});
+
+// State Notifier (complexo)
+final matchProvider = StateNotifierProvider<MatchNotifier, MatchState>((ref) {
+  return MatchNotifier(ref.read(matchRepositoryProvider));
+});
+```
+
+### 9.3 Tratamento de Erros
+
+**Either Pattern:**
+```dart
+typedef Result<T> = Either<Failure, T>;
+
+// Uso
+Result<User> login(String email, String password) {
+  try {
+    final user = await authRepository.login(email, password);
+    return Right(user);
+  } catch (e) {
+    return Left(ServerFailure(e.toString()));
+  }
+}
+```
+
+### 9.4 Testes
+
+**Estrutura:**
+```
+test/
+├── unit/              # Testes unitários
+├── widget/            # Testes de widgets
+└── integration/       # Testes de integração
+```
+
+**Cobertura mínima**: 70%
 
 ---
 
-## 8. Métricas de Sucesso
+## 10. APIs e Integrações
 
-### 8.1 KPIs
-- Usuários ativos diários (DAU)
-- Usuários ativos mensais (MAU)
-- Taxa de retenção (D1, D7, D30)
+### 10.1 Supabase
+
+**Tabelas Principais:**
+```sql
+-- Users (extend Supabase Auth)
+profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users,
+  username TEXT UNIQUE,
+  avatar_url TEXT,
+  elo INTEGER DEFAULT 1000,
+  division TEXT DEFAULT 'bronze',
+  wins INTEGER DEFAULT 0,
+  losses INTEGER DEFAULT 0,
+  draws INTEGER DEFAULT 0,
+  coins INTEGER DEFAULT 100,
+  created_at TIMESTAMP
+)
+
+-- Matches
+matches (
+  id UUID PRIMARY KEY,
+  player1_id UUID REFERENCES profiles(id),
+  player2_id UUID REFERENCES profiles(id),
+  player1_team TEXT,
+  player2_team TEXT,
+  player1_score INTEGER DEFAULT 0,
+  player2_score INTEGER DEFAULT 0,
+  status TEXT, -- waiting, in_progress, finished, cancelled
+  type TEXT, -- quick, ranked, tournament, friendly
+  winner_id UUID REFERENCES profiles(id),
+  created_at TIMESTAMP,
+  started_at TIMESTAMP,
+  finished_at TIMESTAMP
+)
+
+-- Rankings
+rankings (
+  user_id UUID PRIMARY KEY REFERENCES profiles(id),
+  elo INTEGER,
+  division TEXT,
+  position INTEGER,
+  updated_at TIMESTAMP
+)
+
+-- Tournaments
+tournaments (
+  id UUID PRIMARY KEY,
+  name TEXT,
+  start_date TIMESTAMP,
+  end_date TIMESTAMP,
+  max_participants INTEGER,
+  status TEXT, -- registration, in_progress, finished
+  winner_id UUID REFERENCES profiles(id)
+)
+
+-- Friends
+friendships (
+  id UUID PRIMARY KEY,
+  user1_id UUID REFERENCES profiles(id),
+  user2_id UUID REFERENCES profiles(id),
+  status TEXT, -- pending, accepted, blocked
+  created_at TIMESTAMP
+)
+```
+
+### 10.2 Edge Functions (Supabase)
+
+**Funções Necessárias:**
+- `matchmaking`: Lógica de busca de oponente
+- `game-server`: Servidor autoritativo da partida
+- `elo-calculation`: Cálculo de ELO após partida
+- `tournament-bracket`: Geração de chaves
+
+### 10.3 WebSockets
+
+**Eventos:**
+```dart
+// Cliente → Servidor
+- join_match
+- player_action
+- pause_match
+- leave_match
+
+// Servidor → Cliente
+- match_started
+- game_state_update
+- player_scored
+- match_ended
+```
+
+---
+
+## 11. Métricas e KPIs
+
+### 11.1 Métricas de Produto
+
+**Engajamento:**
+- DAU (Daily Active Users)
+- MAU (Monthly Active Users)
+- Sessões por usuário
 - Tempo médio de sessão
-- Taxa de conclusão de partidas
-- NPS (Net Promoter Score)
+- Partidas por usuário/dia
 
-### 8.2 Metas Iniciais
-- 1.000 usuários registrados no primeiro mês
-- 100 partidas/dia no primeiro mês
+**Retenção:**
+- D1 Retention: > 40%
+- D7 Retention: > 30%
+- D30 Retention: > 15%
+
+**Conversão:**
+- Taxa de registro (visitantes → usuários)
+- Taxa de primeira partida
+- Taxa de retorno (usuários que voltam)
+
+### 11.2 Métricas Técnicas
+
+- Tempo de resposta médio
+- Taxa de erro
+- Uptime
+- Latência de rede
+- FPS médio durante partidas
+
+### 11.3 Metas Iniciais (Primeiro Mês)
+
+- 1.000 usuários registrados
+- 100 partidas/dia
 - Retenção D7 > 30%
 - Retenção D30 > 15%
+- NPS > 50
 
 ---
 
-## 9. Notas de Desenvolvimento
+## 12. Considerações Finais
 
-### 9.1 Prioridades
-1. **Crítico**: Sistema de partidas funcionando
-2. **Alto**: Matchmaking e ranking
-3. **Médio**: Social e torneios
-4. **Baixo**: Cosméticos e extras
+### 12.1 Monetização (Futuro)
 
-### 9.2 Decisões Técnicas Pendentes
-- [x] **Escolher framework frontend** → **Flutter** (decisão tomada)
-- [ ] Escolher backend (Firebase vs próprio)
-- [ ] Definir engine de física para partidas (Flutter Physics ou custom)
-- [x] **Escolher sistema de state management** → **Riverpod** (recomendado)
-- [ ] Definir estratégia de sincronização (WebSockets vs Firebase Realtime)
+**Modelo:**
+- **Gratuito**: Todas as funcionalidades básicas
+- **Cosméticos**: Skins, emojis, avatares
+- **Battle Pass**: Recompensas sazonais
+- **Anúncios**: Apenas após partidas (não durante)
+
+**Princípio**: Nunca pay-to-win, apenas cosméticos
+
+### 12.2 Localização
+
+**Idiomas:**
+1. Português (BR) - Prioridade
+2. Inglês
+3. Espanhol
+
+**Futuro**: Francês, Alemão, Italiano
+
+### 12.3 Acessibilidade
+
+- Suporte a leitores de tela
+- Alto contraste
+- Tamanhos de fonte ajustáveis
+- Controles alternativos
 
 ---
 
-**Última atualização**: Data de criação do documento
-**Versão**: 1.0
-**Status**: Em planejamento
+**Versão**: 2.0  
+**Última Atualização**: 2024  
+**Status**: Em Desenvolvimento - Fase 1 (MVP)  
+**Mantido por**: Equipe Football Online
