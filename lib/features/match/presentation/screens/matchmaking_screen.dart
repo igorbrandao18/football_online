@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/theme/colors.dart';
 import '../../../../../shared/widgets/buttons/secondary_button.dart';
 import '../../../../../shared/widgets/loading/loading_indicator.dart';
@@ -48,29 +49,29 @@ class _MatchmakingScreenState extends State<MatchmakingScreen> {
     await Future.delayed(const Duration(seconds: 3));
     
     if (mounted) {
-      // TODO: Navigate to match screen when opponent found
-      Navigator.of(context).pop();
-      _showMatchFound();
+      _timer?.cancel();
+      
+      // Simular resultado da partida (por enquanto vai direto para resultado)
+      // TODO: Quando tiver tela de partida, navegar para lá primeiro
+      final isWinner = true; // Simular vitória
+      final playerScore = 3;
+      final opponentScore = 1;
+      final eloChange = widget.matchType == 'ranked' ? 25 : 0;
+      final coinsEarned = widget.matchType == 'ranked' ? 100 : 50;
+      
+      // Navegar para tela de resultado
+      if (mounted) {
+        context.pushReplacement(
+          '/match-result?'
+          'winner=$isWinner&'
+          'playerScore=$playerScore&'
+          'opponentScore=$opponentScore&'
+          'eloChange=$eloChange&'
+          'coinsEarned=$coinsEarned&'
+          'opponentName=Oponente123',
+        );
+      }
     }
-  }
-
-  void _showMatchFound() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text('Oponente Encontrado!'),
-        content: const Text('Preparando partida...'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
   }
 
   String _formatTime(int seconds) {
@@ -171,7 +172,7 @@ class _MatchmakingScreenState extends State<MatchmakingScreen> {
                     icon: Icons.close,
                     onPressed: () {
                       _timer?.cancel();
-                      Navigator.of(context).pop();
+                      context.pop();
                     },
                   ),
                 ],
